@@ -17,18 +17,68 @@ device = torch.device("cpu")
 def clear():
     os.system("cls")
 
+def add_dataset_image(filename):
+    annotations = json.load(open(r"dataset_images/actual_stuff/_annotations.coco.json"))
+    
+    for image in annotations["images"]:
+        if image["file_name"] == filename:
+            print("Image already exists in dataset")
+            break
+    
+    category = input("Enter category: ")
+
+    im = cv2.imread(filename)
+    area = cv2.selectROI("Select area", im, fromCenter=False, showCrosshair=False)
+
+    annotations["images"].append({
+        "id": len(annotations["images"]) + 1,
+        "width": im.shape[1],
+        "height": im.shape[0],
+        "file_name": filename,
+        "date_captured": "2025-12-14T15:32:00+00:00"
+    })
+    
+    annotations["annotations"].append({
+        "id": len(annotations["annotations"]) + 1,
+        "image_id": len(annotations["images"]),
+        "category_id": category,
+        "segmentation": [],
+        "area": area[2] * area[3],
+        "bbox": [area[0], area[1], area[2], area[3]],
+        "iscrowd": 0
+    })
+
+    json.dump(annotations, open(r"dataset_images/actual_stuff/_annotations.coco.json", "w"))
+
+    print("Success!")
+
+def clear_dataset():
+    annotations = json.load(open(r"dataset_images/actual_stuff/_annotations.coco.json"))
+    annotations["images"] = []
+    annotations["annotations"] = []
+    json.dump(annotations, open(r"dataset_images/actual_stuff/_annotations.coco.json", "w"))
+
 def dataset_mode():
     clear()
     command = input("""
 s - select image
+c - clear dataset
 e - exit
 Enter command: """)
     if command == "s":
-        select_image()
+        filename = select_image()
+        add_dataset_image(filename)
+    elif command == "c":
+        confirmation = input("Are you sure you want to clear the dataset? (y/n) ")
+        if confirmation == "y":
+            clear_dataset()
+        else:
+            print("Cancelled")
     elif command == "e":
         exit()
     else:
         print("Invalid command")
+
 
 def select_image():
     tk.Tk().withdraw()
@@ -37,17 +87,8 @@ def select_image():
     root.withdraw()
     filename = askopenfilename(parent=root, initialdir="./dataset_images/actual_stuff/") # File selection dialog
     root.destroy()
+    return filename
     
-    for image in annotations["images"]:
-        if image["file_name"] == filename:
-            image_id = image["id"]
-            print("Image already exists in dataset")
-            break
-
-    annotations = json.load(open(r"dataset_images/actual_stuff/_annotations.coco.json"))
-    
-    im = cv2.imread(filename)
-    area = cv2.selectROI("Select area", im, fromCenter=False, showCrosshair=False)
     
 def main():
     clear()

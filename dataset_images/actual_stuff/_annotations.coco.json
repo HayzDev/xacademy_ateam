@@ -20,5 +20,6 @@
     { "id": 2, "name": "Native Rock", "supercategory": "Crab" },
     { "id": 3, "name": "Native Jonah", "supercategory": "Crab" }
   ],
-  "images": []
+  "images": [],
+  "annotations": []
 }
