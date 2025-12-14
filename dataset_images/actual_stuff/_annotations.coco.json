@@ -1,0 +1,24 @@
+{
+  "info": {
+    "year": "2025",
+    "version": "1",
+    "description": "created by me",
+    "contributor": "",
+    "url": "",
+    "date_created": "2025-12-14T14:48:00+00:00"
+  },
+  "licenses": [
+    {
+      "id": 1,
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "name": "CC BY 4.0"
+    }
+  ],
+  "categories": [
+    { "id": 0, "name": "Crab", "supercategory": "none" },
+    { "id": 1, "name": "European Green", "supercategory": "Crab" },
+    { "id": 2, "name": "Native Rock", "supercategory": "Crab" },
+    { "id": 3, "name": "Native Jonah", "supercategory": "Crab" }
+  ],
+  "images": []
+}
