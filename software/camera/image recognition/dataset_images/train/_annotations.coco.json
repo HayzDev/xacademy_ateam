@@ -1,0 +1,75 @@
+{
+  "info": {
+    "year": "2025",
+    "version": "1",
+    "description": "created by me",
+    "contributor": "",
+    "url": "",
+    "date_created": "2025-12-14T14:48:00+00:00"
+  },
+  "licenses": [
+    {
+      "id": 1,
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "name": "CC BY 4.0"
+    }
+  ],
+  "categories": [
+    { "id": 0, "name": "Crab", "supercategory": "none" },
+    { "id": 1, "name": "European Green", "supercategory": "Crab" },
+    { "id": 2, "name": "Native Rock", "supercategory": "Crab" },
+    { "id": 3, "name": "Native Jonah", "supercategory": "Crab" }
+  ],
+  "images": [
+    {
+      "id": 1,
+      "width": 481,
+      "height": 261,
+      "file_name": "C:/Users/xande/Documents/Dev/Python/xacademy/dataset_images/train/egc.png",
+      "date_captured": "2025-12-14T15:32:00+00:00"
+    },
+    {
+      "id": 2,
+      "width": 357,
+      "height": 262,
+      "file_name": "C:/Users/xande/Documents/Dev/Python/xacademy/dataset_images/train/njc.png",
+      "date_captured": "2025-12-14T15:32:00+00:00"
+    },
+    {
+      "id": 3,
+      "width": 382,
+      "height": 259,
+      "file_name": "C:/Users/xande/Documents/Dev/Python/xacademy/dataset_images/train/nrc.png",
+      "date_captured": "2025-12-14T15:32:00+00:00"
+    }
+  ],
+  "annotations": [
+    {
+      "id": 1,
+      "image_id": 1,
+      "category_id": 1,
+      "segmentation": [],
+      "area": 112995,
+      "bbox": [13, 9, 465, 243],
+      "iscrowd": 0
+    },
+    {
+      "id": 2,
+      "image_id": 2,
+      "category_id": 2,
+      "segmentation": [],
+      "area": 87948,
+      "bbox": [8, 6, 349, 252],
+      "iscrowd": 0
+    },
+    {
+      "id": 3,
+      "image_id": 3,
+      "category_id": 3,
+      "segmentation": [],
+      "area": 87952,
+      "bbox": [9, 14, 368, 239],
+      "iscrowd": 0
+    }
+  ]
+}
