@@ -20,6 +20,8 @@ from engine import train_one_epoch, evaluate
 from torchvision import models, transforms
 
 device = torch.device("cpu")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Returns a simple transform that converts a PIL image to a PyTorch tensor
 def get_transform():
     return ToTensor()
@@ -81,15 +83,15 @@ class CocoDetectionDataset(Dataset):
 # Load training dataset with transform applied
 train_dataset = CocoDetectionDataset(
     # Change this to your path
-    image_dir="dataset_images/train", 
-    annotation_path="dataset_images/train/_annotations.coco.json",
+    image_dir=os.path.join(BASE_DIR, "dataset_images/train"), 
+    annotation_path=os.path.join(BASE_DIR, "dataset_images/train/_annotations.coco.json"),
     transforms=get_transform()
 )
 
 # Load validation dataset with same transform
 val_dataset = CocoDetectionDataset(
-    image_dir="dataset_images/train/",
-    annotation_path="dataset_images/train/_annotations.coco.json",
+    image_dir=os.path.join(BASE_DIR, "dataset_images/train/"),
+    annotation_path=os.path.join(BASE_DIR, "dataset_images/train/_annotations.coco.json"),
     transforms=get_transform()
 )
 
@@ -148,7 +150,7 @@ def clear():
     os.system("cls")
 
 def add_dataset_image(filename):
-    annotations = json.load(open(r"dataset_images/train/_annotations.coco.json"))
+    annotations = json.load(open(os.path.join(BASE_DIR, "dataset_images/train/_annotations.coco.json")))
     
     for image in annotations["images"]:
         if image["file_name"] == filename:
@@ -182,22 +184,22 @@ def add_dataset_image(filename):
         "iscrowd": 0
     })
 
-    json.dump(annotations, open(r"dataset_images/train/_annotations.coco.json", "w"))
+    json.dump(annotations, open(os.path.join(BASE_DIR, "dataset_images/train/_annotations.coco.json"), "w"))
 
     print("Success!")
 
 def clear_dataset():
-    annotations = json.load(open(r"dataset_images/train/_annotations.coco.json"))
+    annotations = json.load(open(os.path.join(BASE_DIR, "dataset_images/train/_annotations.coco.json")))
     annotations["images"] = []
     annotations["annotations"] = []
-    json.dump(annotations, open(r"dataset_images/train/_annotations.coco.json", "w"))
+    json.dump(annotations, open(os.path.join(BASE_DIR, "dataset_images/train/_annotations.coco.json"), "w"))
 
 def select_folder():
     tk.Tk().withdraw()
     root = tk.Tk()
     root.attributes("-topmost", True)
     root.withdraw()
-    folder_path = askdirectory(parent=root, initialdir="./")
+    folder_path = askdirectory(parent=root, initialdir=BASE_DIR)
     root.destroy()
     return folder_path
 
@@ -206,7 +208,7 @@ def add_folder_images():
     if not folder_path:
         return
 
-    dest_dir = os.path.abspath("dataset_images/train")
+    dest_dir = os.path.join(BASE_DIR, "dataset_images/train")
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
 
@@ -263,7 +265,7 @@ def select_image():
     root = tk.Tk()
     root.attributes("-topmost", True) 
     root.withdraw()
-    filename = askopenfilename(parent=root, initialdir="./dataset_images/train/") # File selection dialog
+    filename = askopenfilename(parent=root, initialdir=os.path.join(BASE_DIR, "dataset_images/train/")) # File selection dialog
     root.destroy()
     return filename
 
@@ -282,7 +284,7 @@ def training_mode():
         evaluate(model, val_loader, device=device)  # Using val_loader for evaluation
 
         # Optionally, save the model checkpoint after each epoch
-        torch.save(model.state_dict(), f"faster-rcnn-torch\model_epoch_{epoch + 1}.pth")
+        torch.save(model.state_dict(), os.path.join(BASE_DIR, f"faster-rcnn-torch/model_epoch_{epoch + 1}.pth"))
 
 def test_mode():
     # class names
@@ -297,11 +299,11 @@ def test_mode():
     """
     Change this to your model path
     """
-    model.load_state_dict(torch.load(r"faster-rcnn-torch\model_epoch_10.pth"))
+    model.load_state_dict(torch.load(os.path.join(BASE_DIR, r"faster-rcnn-torch/model_epoch_10.pth")))
     model.eval()
 
     # Load image with OpenCV and convert to RGB
-    img_path = r"dataset_images/train/egc.png" # CHANGE this to your image path
+    img_path = os.path.join(BASE_DIR, r"dataset_images/train/egc.png") # CHANGE this to your image path
     image_bgr = cv2.imread(img_path)
     image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
     image_pil = Image.fromarray(image_rgb)
