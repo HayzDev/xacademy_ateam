@@ -19,7 +19,21 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from engine import train_one_epoch, evaluate
 from torchvision import models, transforms
 
-device = torch.device("cpu")
+
+try:
+    import intel_extension_for_pytorch as ipex
+except ImportError:
+    ipex = None
+
+if hasattr(torch, 'xpu') and torch.xpu.is_available():
+    device = torch.device("xpu")
+    print(f"Using Intel Arc GPU: {torch.xpu.get_device_name(0)}")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+    print("Using NVIDIA GPU (CUDA)")
+else:
+    device = torch.device("cpu")
+    print("Using CPU")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Returns a simple transform that converts a PIL image to a PyTorch tensor
@@ -42,7 +56,7 @@ class CocoDetectionDataset(Dataset):
     def __getitem__(self, idx):
         image_id = self.image_ids[idx]
         image_info = self.coco.loadImgs(image_id)[0]
-        image_path = os.path.join(self.image_dir, image_info['file_name'])
+        image_path = os.path.join(self.image_dir, os.path.basename(image_info['file_name']))
         image = Image.open(image_path).convert("RGB")
 
         # Load all annotations for this image
@@ -146,6 +160,10 @@ params = [p for p in model.parameters() if p.requires_grad]
 # Define the optimizer (Stochastic Gradient Descent) with learning rate, momentum, and weight decay
 optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)
 
+if ipex and device.type == "xpu":
+    print("Optimizing model and optimizer with Intel Extension for PyTorch (IPEX)")
+    model, optimizer = ipex.optimize(model, optimizer=optimizer)
+
 def clear():
     os.system("cls")
 
@@ -214,6 +232,12 @@ def add_folder_images():
 
     for filename in os.listdir(folder_path):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+            # Skip valid images that have already been added/processed
+            start_name, ext = os.path.splitext(filename)
+            if start_name.endswith("_added"):
+                print(f"Skipping {filename} (already added)")
+                continue
+
             src_path = os.path.join(folder_path, filename)
             dest_path = os.path.join(dest_dir, filename)
 
@@ -235,6 +259,15 @@ def add_folder_images():
 
             print(f"Processing {filename}...")
             add_dataset_image(dest_path)
+            
+            # Rename original image to indicate it has been added
+            new_src_filename = f"{start_name}_added{ext}"
+            new_src_path = os.path.join(folder_path, new_src_filename)
+            try:
+                os.rename(src_path, new_src_path)
+                print(f"Renamed original to {new_src_filename}")
+            except OSError as e:
+                print(f"Error renaming {filename}: {e}")
 
 def dataset_mode():
     clear()
@@ -303,7 +336,9 @@ def test_mode():
     model.eval()
 
     # Load image with OpenCV and convert to RGB
-    img_path = os.path.join(BASE_DIR, r"dataset_images/train/egc.png") # CHANGE this to your image path
+    img_path = select_image()
+    if not img_path:
+        return
     image_bgr = cv2.imread(img_path)
     image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
     image_pil = Image.fromarray(image_rgb)
@@ -332,10 +367,10 @@ def test_mode():
             # draw label and score
             text = f"{label}: {score:.2f}"
             cv2.putText(image_bgr, text, (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.9, (0, 255, 0), 2, cv2.LINE_AA)
+                        3, (0, 255, 0), 5, cv2.LINE_AA)
 
             # Draw rectangle and label
-            cv2.rectangle(image_bgr, (box[0], box[1]), (box[2], box[3]), (0, 0, 255), 2)
+            cv2.rectangle(image_bgr, (box[0], box[1]), (box[2], box[3]), (0, 0, 255), 5)
 
 
     # Convert BGR to RGB for correct display with matplotlib
@@ -347,18 +382,22 @@ def test_mode():
     plt.axis('off')
     plt.show()
 
+    crab_num = 0
+
     for i in range(len(boxes)):
         if scores[i] > threshold:
             box = boxes[i].cpu().numpy().astype(int)
             label = label_list[labels[i]]
             score = scores[i].item()
+            crab_num += 1
             print(f"Detected: {label} at position: {box}")
 
-    if len(boxes) == 0:
+    print("Number of crabs detected:", crab_num)
+
+    if crab_num == 0:
         print("No crabs detected")
 
-    time.sleep(30)
-
+    time.sleep(10)
 
 def main():
     
