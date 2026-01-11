@@ -48,3 +48,5 @@ uritemplate==4.2.0
 urllib3==2.5.0
 wheel==0.45.1
 windows-curses==2.4.1
+
+open3d>=0.17.0
